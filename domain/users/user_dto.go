@@ -1,7 +1,7 @@
 package users
 
 import (
-	errors2 "github.com/agrism/bookstore_users-api/utils/errors"
+	"github.com/agrism/bookstore_users-api/utils/errors"
 	"strings"
 )
 
@@ -17,7 +17,7 @@ type User struct {
 
 type  Users []User
 
-func (user *User) Validate() *errors2.RestErr {
+func (user *User) Validate() *errors.RestErr {
 
 	user.FirstName = strings.TrimSpace(user.FirstName)
 	user.LastName = strings.TrimSpace(user.LastName)
@@ -25,12 +25,12 @@ func (user *User) Validate() *errors2.RestErr {
 	user.Email = strings.TrimSpace(strings.ToLower(user.Email))
 
 	if user.Email == "" {
-		return errors2.NewBadRequestError("invalid email address")
+		return errors.NewBadRequestError("invalid email address")
 	}
 
 	user.Password = strings.TrimSpace(user.Password)
 	if user.Password == "" {
-		return errors2.NewBadRequestError("invalid password")
+		return errors.NewBadRequestError("invalid password")
 	}
 
 	return nil

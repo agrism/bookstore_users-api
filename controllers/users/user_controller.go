@@ -3,17 +3,17 @@ package users
 import (
 	"github.com/agrism/bookstore_users-api/domain/users"
 	"github.com/agrism/bookstore_users-api/services"
-	errors2 "github.com/agrism/bookstore_users-api/utils/errors"
+	"github.com/agrism/bookstore_users-api/utils/errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
 
-func getUserId(userIdParam string) (int64, *errors2.RestErr) {
+func getUserId(userIdParam string) (int64, *errors.RestErr) {
 	userId, userErr := strconv.ParseInt(userIdParam, 10, 54)
 
 	if userErr != nil {
-		return 0, errors2.NewBadRequestError("Invalid user id, should be a number!")
+		return 0, errors.NewBadRequestError("Invalid user id, should be a number!")
 	}
 	return userId, nil
 }
@@ -40,7 +40,7 @@ func Create(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 
-		restError := errors2.NewBadRequestError("invalid json body")
+		restError := errors.NewBadRequestError("invalid json body")
 		ctx.JSON(restError.Status, restError)
 		return
 	}
@@ -64,7 +64,7 @@ func Update(ctx *gin.Context) {
 	var user users.User
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		restError := errors2.NewBadRequestError("invalid json body")
+		restError := errors.NewBadRequestError("invalid json body")
 		ctx.JSON(restError.Status, restError)
 		return
 	}
