@@ -10,7 +10,7 @@ const (
 	queryInsertUser = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?,?,?,?);"
 	queryGetUser    = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id = ?"
 	queryUpdateUser = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?"
-	errorNoRows     = "no rows in result set"
+	queryDeleteUser = "DELETE FROM users WHERE id=?"
 )
 
 var (
@@ -74,8 +74,24 @@ func (user *User) Update() *errors.RestErr {
 
 	_, updErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.Id)
 
-	if updErr != nil{
+	if updErr != nil {
 		return mysql_utils.ParseError(updErr)
+	}
+
+	return nil
+}
+
+func (user *User) Delete() *errors.RestErr {
+	stmt, err := users_db.Client.Prepare(queryDeleteUser)
+
+	if err != nil {
+		return errors.NewBadRequestError(err.Error())
+	}
+
+	defer stmt.Close()
+
+	if _, delError := stmt.Exec(user.Id); delError != nil {
+		return mysql_utils.ParseError(delError)
 	}
 
 	return nil
