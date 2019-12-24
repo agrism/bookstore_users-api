@@ -11,6 +11,8 @@ type User struct {
 	LastName    string `json:"last_name"`
 	Email       string `json:"email"`
 	DateCreated string `json:"date_created"`
+	Status      string `json:"status"`
+	Password    string `json:"password,omitempty"`
 }
 
 func (user *User) Validate() *errors.RestErr {
@@ -24,5 +26,21 @@ func (user *User) Validate() *errors.RestErr {
 		return errors.NewBadRequestError("invalid email address")
 	}
 
+	user.Password = strings.TrimSpace(user.Password)
+	if user.Password == "" {
+		return errors.NewBadRequestError("invalid password")
+	}
+
 	return nil
+}
+
+func (user *User) SanitizeUser() User {
+	return User{user.Id,
+		user.FirstName,
+		user.LastName,
+		user.Email,
+		user.DateCreated,
+		user.Status,
+		"",
+	}
 }

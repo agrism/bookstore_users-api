@@ -100,3 +100,17 @@ func Delete(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, map[string]string{"status": "deleted"})
 }
+
+func FindByStatus(ctx *gin.Context) {
+
+	status := ctx.Query("status")
+
+	users, err := services.FindByStatus(status)
+
+	if err != nil{
+		ctx.JSON(err.Status, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, users)
+}

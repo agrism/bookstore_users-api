@@ -54,17 +54,29 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 		if user.Email != "" {
 			current.Email = user.Email
 		}
+
+		if user.Status != "" {
+			current.Status = user.Status
+		}
+
+		if user.Password != "" {
+			current.Password = user.Password
+		}
 	} else {
 		current.FirstName = user.FirstName
 		current.LastName = user.LastName
 		current.Email = user.Email
+		current.Status = user.Status
+		current.Password = user.Password
 	}
 
 	if err := current.Update(); err != nil {
 		return nil, err
 	}
 
-	return current, nil
+	sanitized :=current.SanitizeUser()
+
+	return &sanitized, nil
 }
 
 func DeleteUser(user users.User) *errors.RestErr {
@@ -76,4 +88,9 @@ func DeleteUser(user users.User) *errors.RestErr {
 	}
 
 	return nil
+}
+
+func FindByStatus(status string) ([]users.User, *errors.RestErr) {
+	dao := &users.User{}
+	return dao.FindUserByStatus(status)
 }
