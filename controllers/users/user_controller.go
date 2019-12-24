@@ -1,7 +1,6 @@
 package users
 
 import (
-	"fmt"
 	"github.com/agrism/bookstore_users-api/domain/users"
 	"github.com/agrism/bookstore_users-api/services"
 	errors "github.com/agrism/bookstore_users-api/utils"
@@ -10,49 +9,73 @@ import (
 	"strconv"
 )
 
-func GetUser(context *gin.Context) {
+func GetUser(ctx *gin.Context) {
 
-	userId, userErr := strconv.ParseInt(context.Param("user_id"), 10, 54)
+	userId, userErr := strconv.ParseInt(ctx.Param("user_id"), 10, 54)
 
 	if userErr != nil {
 		restErr := errors.NewBadRequestError("Invalid user id, should be a number!")
-		context.JSON(restErr.Status, restErr)
+		ctx.JSON(restErr.Status, restErr)
 		return
 	}
 
 	user, getError := services.GetUser(userId)
 
 	if getError != nil {
-		context.JSON(getError.Status, getError)
+		ctx.JSON(getError.Status, getError)
 		return
 	}
 
-	context.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, user)
 }
 
-func CreateUser(context *gin.Context) {
+func CreateUser(ctx *gin.Context) {
 	var user users.User
-	fmt.Println(user)
 
-	if err := context.ShouldBindJSON(&user); err != nil {
+	if err := ctx.ShouldBindJSON(&user); err != nil {
 
 		restError := errors.NewBadRequestError("invalid json body")
-		context.JSON(restError.Status, restError)
+		ctx.JSON(restError.Status, restError)
 		return
 	}
 
 	result, saveError := services.CreateUser(user)
 
 	if saveError != nil {
-		context.JSON(saveError.Status, saveError)
+		ctx.JSON(saveError.Status, saveError)
 		return
 	}
 
-	context.JSON(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, result)
 }
 
-func SearchUser(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{
-		"message": "findUser",
-	})
+func UpdateUser(ctx *gin.Context) {
+	userId, userErr := strconv.ParseInt(ctx.Param("user_id"), 10, 54)
+
+	if userErr != nil {
+		restErr := errors.NewBadRequestError("Invalid user id, should be a number!")
+		ctx.JSON(restErr.Status, restErr)
+		return
+	}
+
+	var user users.User
+
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		restError := errors.NewBadRequestError("invalid json body")
+		ctx.JSON(restError.Status, restError)
+		return
+	}
+
+	user.Id = userId
+
+	isPartial := ctx.Request.Method == http.MethodPatch
+
+	result, updateError := services.UpdateUser(isPartial, user)
+
+	if updateError != nil {
+		ctx.JSON(updateError.Status, updateError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, result)
 }
