@@ -2,16 +2,19 @@ package services
 
 import (
 	"github.com/agrism/bookstore_users-api/domain/users"
-	errors "github.com/agrism/bookstore_users-api/utils"
+	"github.com/agrism/bookstore_users-api/utils/crypto_utils"
 	"github.com/agrism/bookstore_users-api/utils/date_utils"
+	errors2 "github.com/agrism/bookstore_users-api/utils/errors"
 )
 
-func CreateUser(user users.User) (*users.User, *errors.RestErr) {
+func CreateUser(user users.User) (*users.User, *errors2.RestErr) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
 
+	user.Status = users.StatusActive
 	user.DateCreated = date_utils.GetNowString()
+	user.Password = crypto_utils.GetMd5(user.Password)
 
 	if err := user.Save(); err != nil {
 		return nil, err
@@ -20,7 +23,7 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	return &user, nil
 }
 
-func GetUser(userId int64) (*users.User, *errors.RestErr) {
+func GetUser(userId int64) (*users.User, *errors2.RestErr) {
 
 	result := &users.User{Id: userId}
 
@@ -31,7 +34,7 @@ func GetUser(userId int64) (*users.User, *errors.RestErr) {
 	return result, nil
 }
 
-func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
+func UpdateUser(isPartial bool, user users.User) (*users.User, *errors2.RestErr) {
 	current, err := GetUser(user.Id)
 
 	if err != nil {
@@ -74,12 +77,10 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 		return nil, err
 	}
 
-	sanitized :=current.SanitizeUser()
-
-	return &sanitized, nil
+	return current, nil
 }
 
-func DeleteUser(user users.User) *errors.RestErr {
+func DeleteUser(user users.User) *errors2.RestErr {
 
 	result := &users.User{Id: user.Id}
 
@@ -90,7 +91,7 @@ func DeleteUser(user users.User) *errors.RestErr {
 	return nil
 }
 
-func FindByStatus(status string) ([]users.User, *errors.RestErr) {
+func FindByStatus(status string) (users.Users, *errors2.RestErr) {
 	dao := &users.User{}
 	return dao.FindUserByStatus(status)
 }

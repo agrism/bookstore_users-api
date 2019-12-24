@@ -3,17 +3,17 @@ package users
 import (
 	"github.com/agrism/bookstore_users-api/domain/users"
 	"github.com/agrism/bookstore_users-api/services"
-	errors "github.com/agrism/bookstore_users-api/utils"
+	errors2 "github.com/agrism/bookstore_users-api/utils/errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
 
-func getUserId(userIdParam string) (int64, *errors.RestErr) {
+func getUserId(userIdParam string) (int64, *errors2.RestErr) {
 	userId, userErr := strconv.ParseInt(userIdParam, 10, 54)
 
 	if userErr != nil {
-		return 0, errors.NewBadRequestError("Invalid user id, should be a number!")
+		return 0, errors2.NewBadRequestError("Invalid user id, should be a number!")
 	}
 	return userId, nil
 }
@@ -32,7 +32,7 @@ func Get(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, user.Marshall(ctx.GetHeader("X-Public") == "true"))
 }
 
 func Create(ctx *gin.Context) {
@@ -40,7 +40,7 @@ func Create(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 
-		restError := errors.NewBadRequestError("invalid json body")
+		restError := errors2.NewBadRequestError("invalid json body")
 		ctx.JSON(restError.Status, restError)
 		return
 	}
@@ -52,7 +52,7 @@ func Create(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, result.Marshall(ctx.GetHeader("X-Public") == "true"))
 }
 
 func Update(ctx *gin.Context) {
@@ -64,7 +64,7 @@ func Update(ctx *gin.Context) {
 	var user users.User
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		restError := errors.NewBadRequestError("invalid json body")
+		restError := errors2.NewBadRequestError("invalid json body")
 		ctx.JSON(restError.Status, restError)
 		return
 	}
@@ -80,7 +80,7 @@ func Update(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, result.Marshall(ctx.GetHeader("X-Public") == "true"))
 }
 
 func Delete(ctx *gin.Context) {
@@ -107,10 +107,10 @@ func FindByStatus(ctx *gin.Context) {
 
 	users, err := services.FindByStatus(status)
 
-	if err != nil{
+	if err != nil {
 		ctx.JSON(err.Status, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, users)
+	ctx.JSON(http.StatusOK, users.Marshal(ctx.GetHeader("X-Public") == "true"))
 }

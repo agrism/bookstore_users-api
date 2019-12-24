@@ -3,7 +3,7 @@ package users
 import (
 	"fmt"
 	"github.com/agrism/bookstore_users-api/datasources/mysql/users_db"
-	errors "github.com/agrism/bookstore_users-api/utils"
+	errors2 "github.com/agrism/bookstore_users-api/utils/errors"
 	"github.com/agrism/bookstore_users-api/utils/mysql_utils"
 )
 
@@ -13,18 +13,19 @@ const (
 	queryUpdateUser       = "UPDATE users SET first_name=?, last_name=?, email=?, status=?, password=? WHERE id=?"
 	queryDeleteUser       = "DELETE FROM users WHERE id=?"
 	queryFindUserByStatus = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE status=?"
+	StatusActive          = "active"
 )
 
 var (
 	userDB = make(map[int64]*User)
 )
 
-func (user *User) Get() *errors.RestErr {
+func (user *User) Get() *errors2.RestErr {
 
 	stmt, err := users_db.Client.Prepare(queryGetUser)
 
 	if err != nil {
-		return errors.NewBadRequestError(err.Error())
+		return errors2.NewBadRequestError(err.Error())
 	}
 
 	defer stmt.Close()
@@ -39,12 +40,12 @@ func (user *User) Get() *errors.RestErr {
 	return nil
 }
 
-func (user *User) Save() *errors.RestErr {
+func (user *User) Save() *errors2.RestErr {
 
 	stmt, err := users_db.Client.Prepare(queryInsertUser)
 
 	if err != nil {
-		return errors.NewInternalServerError(err.Error())
+		return errors2.NewInternalServerError(err.Error())
 	}
 
 	defer stmt.Close()
@@ -65,11 +66,11 @@ func (user *User) Save() *errors.RestErr {
 	return nil
 }
 
-func (user *User) Update() *errors.RestErr {
+func (user *User) Update() *errors2.RestErr {
 	stmt, err := users_db.Client.Prepare(queryUpdateUser)
 
 	if err != nil {
-		return errors.NewInternalServerError(err.Error())
+		return errors2.NewInternalServerError(err.Error())
 	}
 
 	defer stmt.Close()
@@ -83,11 +84,11 @@ func (user *User) Update() *errors.RestErr {
 	return nil
 }
 
-func (user *User) Delete() *errors.RestErr {
+func (user *User) Delete() *errors2.RestErr {
 	stmt, err := users_db.Client.Prepare(queryDeleteUser)
 
 	if err != nil {
-		return errors.NewBadRequestError(err.Error())
+		return errors2.NewBadRequestError(err.Error())
 	}
 
 	defer stmt.Close()
@@ -99,10 +100,10 @@ func (user *User) Delete() *errors.RestErr {
 	return nil
 }
 
-func (user *User) FindUserByStatus(status string) ([]User, *errors.RestErr) {
+func (user *User) FindUserByStatus(status string) ([]User, *errors2.RestErr) {
 	stmt, findErr := users_db.Client.Prepare(queryFindUserByStatus)
 	if findErr != nil {
-		return nil, errors.NewInternalServerError(findErr.Error())
+		return nil, errors2.NewInternalServerError(findErr.Error())
 	}
 
 	defer stmt.Close()
@@ -126,7 +127,7 @@ func (user *User) FindUserByStatus(status string) ([]User, *errors.RestErr) {
 	}
 
 	if len(result) == 0 {
-		return nil, errors.NewNotFoundError(fmt.Sprintf("no users matchin status %s", status))
+		return nil, errors2.NewNotFoundError(fmt.Sprintf("no users matchin status %s", status))
 	}
 
 	return result, nil
